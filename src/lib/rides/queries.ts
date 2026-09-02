@@ -1,5 +1,5 @@
 import { createAnonClient, createClient } from "@/lib/supabase/server";
-import type { Location } from "@/lib/locations";
+import { locationsInRegion, type Location, type Region } from "@/lib/locations";
 import type { Enums } from "@/types/database";
 
 const RIDE_COLUMNS =
@@ -62,6 +62,7 @@ function selectRides(supabase: Awaited<ReturnType<typeof clientFor>>, verified: 
 }
 
 export type RideFilters = {
+  region?: Region;
   origin?: Location;
   destination?: Location;
   date?: string;
@@ -76,6 +77,10 @@ export async function listRides(filters: RideFilters, verified: boolean) {
     .order("departs_at", { ascending: true })
     .limit(filters.limit ?? 100);
 
+  if (filters.region) {
+    const hubs = locationsInRegion(filters.region).join(",");
+    query = query.or(`origin.in.(${hubs}),destination.in.(${hubs})`);
+  }
   if (filters.origin) query = query.eq("origin", filters.origin);
   if (filters.destination) query = query.eq("destination", filters.destination);
   if (filters.date) query = query.eq("departs_on", filters.date);

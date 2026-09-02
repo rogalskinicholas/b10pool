@@ -11,8 +11,8 @@ export async function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70">
-      <Container className="flex h-14 items-center justify-between">
-        <Link href="/" aria-label="B10Pool home">
+      <Container className="flex h-16 items-center justify-between">
+        <Link href="/" aria-label="B10 Pool home" className="shrink-0">
           <Logo />
         </Link>
 
@@ -30,7 +30,9 @@ export async function Navbar() {
               <Button variant="ghost" render={<Link href="/login" />}>
                 Log in
               </Button>
-              <Button render={<Link href="/signup" />}>Sign up</Button>
+              <Button className="ml-1" render={<Link href="/signup" />}>
+                Sign up
+              </Button>
             </>
           )}
         </nav>

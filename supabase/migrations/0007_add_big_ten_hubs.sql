@@ -1,0 +1,29 @@
+-- West
+alter type public.location add value if not exists 'uw';
+alter type public.location add value if not exists 'oregon';
+alter type public.location add value if not exists 'ucla';
+alter type public.location add value if not exists 'usc';
+alter type public.location add value if not exists 'sea';
+alter type public.location add value if not exists 'pdx';
+alter type public.location add value if not exists 'lax';
+-- Midwest (in addition to purdue, uiuc, chicago_*, indy_*)
+alter type public.location add value if not exists 'iu';
+alter type public.location add value if not exists 'michigan';
+alter type public.location add value if not exists 'msu';
+alter type public.location add value if not exists 'ohio_state';
+alter type public.location add value if not exists 'northwestern';
+alter type public.location add value if not exists 'wisconsin';
+alter type public.location add value if not exists 'minnesota';
+alter type public.location add value if not exists 'iowa';
+alter type public.location add value if not exists 'nebraska';
+alter type public.location add value if not exists 'dtw';
+alter type public.location add value if not exists 'msp';
+-- East
+alter type public.location add value if not exists 'penn_state';
+alter type public.location add value if not exists 'maryland';
+alter type public.location add value if not exists 'rutgers';
+alter type public.location add value if not exists 'nyc';
+alter type public.location add value if not exists 'ewr';
+alter type public.location add value if not exists 'phl';
+alter type public.location add value if not exists 'dc_downtown';
+alter type public.location add value if not exists 'bwi';

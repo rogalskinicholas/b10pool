@@ -28,7 +28,7 @@ export function MobileNav({ name }: { name: string | null }) {
         >
           <Menu />
         </SheetTrigger>
-        <SheetContent side="right" className="w-72">
+        <SheetContent side="right" className="w-80">
           <SheetHeader>
             <SheetTitle>
               <Logo />

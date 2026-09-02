@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
@@ -16,10 +16,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const montserrat = Montserrat({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+});
+
 export const metadata: Metadata = {
-  title: { default: "B10Pool", template: "%s · B10Pool" },
+  title: { default: "B10 Pool · A Carpooling Hub", template: "%s · B10 Pool" },
   description:
-    "Big Ten rides, shared. Carpool between Purdue, UIUC, Chicago, and Indianapolis with verified students.",
+    "The Big Ten carpooling hub. Find or offer rides between campuses, cities, and airports across the West, Midwest, and East — with verified students.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
 };
 
@@ -27,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <Navbar />

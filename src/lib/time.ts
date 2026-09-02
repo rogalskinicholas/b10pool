@@ -1,15 +1,8 @@
 import { fromZonedTime } from "date-fns-tz";
-import type { Location } from "./locations";
+import { LOCATIONS, type Location } from "./locations";
 
 export function timeZoneFor(location: Location): string {
-  switch (location) {
-    case "purdue":
-    case "indy_downtown":
-    case "indy_ind":
-      return "America/Indiana/Indianapolis";
-    default:
-      return "America/Chicago";
-  }
+  return LOCATIONS[location].timeZone;
 }
 
 export function wallTimeToInstant(localDateTime: string, location: Location): Date {

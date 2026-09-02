@@ -171,6 +171,32 @@ export type Database = {
         | "chicago_mdw"
         | "indy_downtown"
         | "indy_ind"
+        | "uw"
+        | "oregon"
+        | "ucla"
+        | "usc"
+        | "sea"
+        | "pdx"
+        | "lax"
+        | "iu"
+        | "michigan"
+        | "msu"
+        | "ohio_state"
+        | "northwestern"
+        | "wisconsin"
+        | "minnesota"
+        | "iowa"
+        | "nebraska"
+        | "dtw"
+        | "msp"
+        | "penn_state"
+        | "maryland"
+        | "rutgers"
+        | "nyc"
+        | "ewr"
+        | "phl"
+        | "dc_downtown"
+        | "bwi"
       ride_status: "open" | "full" | "cancelled"
     }
     CompositeTypes: {
@@ -308,6 +334,32 @@ export const Constants = {
         "chicago_mdw",
         "indy_downtown",
         "indy_ind",
+        "uw",
+        "oregon",
+        "ucla",
+        "usc",
+        "sea",
+        "pdx",
+        "lax",
+        "iu",
+        "michigan",
+        "msu",
+        "ohio_state",
+        "northwestern",
+        "wisconsin",
+        "minnesota",
+        "iowa",
+        "nebraska",
+        "dtw",
+        "msp",
+        "penn_state",
+        "maryland",
+        "rutgers",
+        "nyc",
+        "ewr",
+        "phl",
+        "dc_downtown",
+        "bwi",
       ],
       ride_status: ["open", "full", "cancelled"],
     },
