@@ -5,9 +5,10 @@ import type { Enums } from "@/types/database";
 const RIDE_COLUMNS =
   "id, driver_id, origin, destination, departs_at, departs_on, seats_total, seats_available, price_per_seat, notes, status, created_at";
 
-// Anonymous access only has column-level SELECT on display_name; full_name is for verified students.
+// Anonymous access only has column-level SELECT on display_name (first initial) and school;
+// full_name and grad_year are for verified students.
 const PUBLIC_COLUMNS =
-  `${RIDE_COLUMNS}, driver:profiles(display_name, grad_year, school:schools(name))` as const;
+  `${RIDE_COLUMNS}, driver:profiles(display_name, school:schools(name))` as const;
 const VERIFIED_COLUMNS =
   `${RIDE_COLUMNS}, driver:profiles(full_name, grad_year, school:schools(name))` as const;
 
@@ -27,10 +28,10 @@ export type RideListItem = {
   driver: { name: string; gradYear: number | null; school: string | null } | null;
 };
 
-type RawDriver = ({ display_name: string | null } | { full_name: string }) & {
-  grad_year: number | null;
-  school: { name: string } | null;
-};
+type RawDriver = (
+  | { display_name: string | null }
+  | { full_name: string; grad_year: number | null }
+) & { school: { name: string } | null };
 type RawRide = Omit<RideListItem, "driver"> & { driver: RawDriver | null };
 
 function toRideListItem(row: RawRide): RideListItem {
@@ -41,7 +42,7 @@ function toRideListItem(row: RawRide): RideListItem {
       ? {
           name:
             "full_name" in driver ? driver.full_name : (driver.display_name ?? "Student"),
-          gradYear: driver.grad_year,
+          gradYear: "full_name" in driver ? driver.grad_year : null,
           school: driver.school?.name ?? null,
         }
       : null,
