@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/layout/container";
 import { ProfileForm } from "@/components/profile/profile-form";
-import { listActiveSchools } from "@/lib/schools";
-import { requireUserWithProfile } from "@/lib/supabase/auth";
+import { requireViewer } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
-  const [{ profile }, schools] = await Promise.all([
-    requireUserWithProfile("/profile"),
-    listActiveSchools(),
-  ]);
-  const school = schools.find((s) => s.id === profile.school_id);
+  const { profile, school } = await requireViewer("/profile");
 
   return (
     <Container className="max-w-lg space-y-6 py-8">

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserWithProfile } from "@/lib/supabase/auth";
+import { getViewer } from "@/lib/supabase/auth";
 import { wallTimeToInstant } from "@/lib/time";
 import {
   RIDE_FIELDS,
@@ -28,10 +28,16 @@ export async function createRide(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
   if (!session) redirect("/login?next=/rides/new");
 
   const values = formValues(formData, RIDE_FIELDS);
+  if (!session.verified) {
+    return {
+      error: "Your school isn't active on B10Pool right now, so you can't post rides.",
+      values,
+    };
+  }
   const parsed = rideSchema.safeParse(values);
   if (!parsed.success) {
     return { fieldErrors: fieldErrorsOf(parsed.error), values };
@@ -75,7 +81,7 @@ export async function updateRideStatus(
   rideId: string,
   status: RideStatus,
 ): Promise<Result> {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
   if (!session) return { error: "Sign in to manage rides." };
 
   const supabase = await createClient();
@@ -91,7 +97,7 @@ export async function updateRideStatus(
 }
 
 export async function adjustSeats(rideId: string, delta: 1 | -1): Promise<Result> {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
   if (!session) return { error: "Sign in to manage rides." };
 
   const supabase = await createClient();
@@ -119,7 +125,7 @@ export async function adjustSeats(rideId: string, delta: 1 | -1): Promise<Result
 }
 
 export async function deleteRide(rideId: string): Promise<Result> {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
   if (!session) return { error: "Sign in to manage rides." };
 
   const supabase = await createClient();

@@ -17,6 +17,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          display_name: string | null
           email: string
           full_name: string
           grad_year: number | null
@@ -28,6 +29,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
           email: string
           full_name: string
           grad_year?: number | null
@@ -39,6 +41,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_name?: string | null
           email?: string
           full_name?: string
           grad_year?: number | null
@@ -150,6 +153,8 @@ export type Database = {
     }
     Functions: {
       is_allowed_email: { Args: { p_email: string }; Returns: boolean }
+      is_verified_student: { Args: never; Returns: boolean }
+      redact_name: { Args: { full_name: string }; Returns: string }
       school_for_email: { Args: { p_email: string }; Returns: string }
       time_zone_for: {
         Args: { loc: Database["public"]["Enums"]["location"] }

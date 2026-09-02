@@ -8,6 +8,7 @@ import { RideCard } from "@/components/rides/ride-card";
 import { RideFilters } from "@/components/rides/ride-filters";
 import { isLocation } from "@/lib/locations";
 import { listRides } from "@/lib/rides/queries";
+import { getViewer } from "@/lib/supabase/auth";
 import { isDateInputValue } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Find a ride" };
@@ -19,7 +20,8 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
   const date = isDateInputValue(sp.date) ? sp.date : undefined;
   const hasFilters = Boolean(origin || destination || date);
 
-  const rides = await listRides({ origin, destination, date });
+  const viewer = await getViewer();
+  const rides = await listRides({ origin, destination, date }, viewer?.verified ?? false);
 
   return (
     <Container className="space-y-6 py-8">

@@ -8,8 +8,8 @@ import { RouteLabel } from "./route-label";
 
 export function RideCard({ ride }: { ride: RideListItem }) {
   const { date, time } = formatDeparture(ride.departs_at, ride.origin);
-  const gradYear = ride.driver?.grad_year ? `'${String(ride.driver.grad_year).slice(-2)}` : "";
-  const school = ride.driver?.school?.name;
+  const gradYear = ride.driver?.gradYear ? `'${String(ride.driver.gradYear).slice(-2)}` : "";
+  const school = ride.driver?.school;
 
   return (
     <Link href={`/rides/${ride.id}`} className="group block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
@@ -31,7 +31,7 @@ export function RideCard({ ride }: { ride: RideListItem }) {
           <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
             <GraduationCap className="size-3.5 shrink-0" />
             <span className="truncate">
-              {ride.driver?.full_name ?? "Student"}
+              {ride.driver?.name ?? "Student"}
               {school ? ` · ${school} ${gradYear}` : ""}
             </span>
           </div>

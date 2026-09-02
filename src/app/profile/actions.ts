@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserWithProfile } from "@/lib/supabase/auth";
+import { getViewer } from "@/lib/supabase/auth";
 import {
   PROFILE_FIELDS,
   fieldErrorsOf,
@@ -16,7 +16,7 @@ export async function updateProfile(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
   if (!session) redirect("/login?next=/profile");
 
   const values = formValues(formData, PROFILE_FIELDS);

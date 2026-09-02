@@ -8,13 +8,13 @@ import { RideActions } from "@/components/rides/ride-actions";
 import { RideStatusBadge } from "@/components/rides/ride-status-badge";
 import { RouteLabel } from "@/components/rides/route-label";
 import { listMyRides, type MyRide } from "@/lib/rides/queries";
-import { requireUserWithProfile } from "@/lib/supabase/auth";
+import { requireViewer } from "@/lib/supabase/auth";
 import { formatDeparture, formatPrice } from "@/lib/time";
 
 export const metadata: Metadata = { title: "My rides" };
 
 export default async function DashboardPage() {
-  const { user } = await requireUserWithProfile("/dashboard");
+  const { user } = await requireViewer("/dashboard");
   const { all: rides, upcoming, past } = await listMyRides(user.id);
 
   return (

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/layout/container";
 import { RideForm } from "@/components/rides/ride-form";
-import { requireUserWithProfile } from "@/lib/supabase/auth";
+import { requireVerifiedViewer } from "@/lib/supabase/auth";
 
 export const metadata: Metadata = { title: "Post a ride" };
 
 export default async function NewRidePage() {
-  const { profile } = await requireUserWithProfile("/rides/new");
+  const { profile } = await requireVerifiedViewer("/rides/new");
 
   return (
     <Container className="max-w-2xl space-y-6 py-8">

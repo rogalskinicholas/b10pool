@@ -14,6 +14,7 @@ import { RideCard } from "@/components/rides/ride-card";
 import { listRides } from "@/lib/rides/queries";
 import { LOCATIONS, LOCATION_IDS } from "@/lib/locations";
 import { formatSchoolList, listActiveSchools } from "@/lib/schools";
+import { getViewer } from "@/lib/supabase/auth";
 
 const HUB_ICONS = {
   campus: GraduationCap,
@@ -22,8 +23,9 @@ const HUB_ICONS = {
 } as const;
 
 export default async function HomePage() {
+  const viewer = await getViewer();
   const [rides, schools] = await Promise.all([
-    listRides({ limit: 4 }),
+    listRides({ limit: 4 }, viewer?.verified ?? false),
     listActiveSchools(),
   ]);
   const schoolNames = formatSchoolList(schools.map((s) => s.name));

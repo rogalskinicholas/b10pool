@@ -17,7 +17,7 @@ import { RideStatusBadge } from "@/components/rides/ride-status-badge";
 import { RouteLabel } from "@/components/rides/route-label";
 import { LOCATIONS } from "@/lib/locations";
 import { getRide, getRideContact } from "@/lib/rides/queries";
-import { getUserWithProfile } from "@/lib/supabase/auth";
+import { getViewer } from "@/lib/supabase/auth";
 import { formatDeparture, formatPrice } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Ride details" };
@@ -28,13 +28,15 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
   const { id } = await params;
   if (!UUID_RE.test(id)) notFound();
 
-  const [ride, session] = await Promise.all([getRide(id), getUserWithProfile()]);
+  const viewer = await getViewer();
+  const verified = viewer?.verified ?? false;
+  const ride = await getRide(id, verified);
   if (!ride) notFound();
 
-  const contact = session ? await getRideContact(id) : null;
-  const isOwner = session?.user.id === ride.driver_id;
+  const contact = verified ? await getRideContact(id) : null;
+  const isOwner = viewer?.user.id === ride.driver_id;
   const { date, time } = formatDeparture(ride.departs_at, ride.origin);
-  const gradYear = ride.driver?.grad_year ? `'${String(ride.driver.grad_year).slice(-2)}` : null;
+  const gradYear = ride.driver?.gradYear ? `'${String(ride.driver.gradYear).slice(-2)}` : null;
 
   return (
     <Container className="max-w-2xl space-y-8 py-8">
@@ -71,10 +73,10 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
         <h2 className="text-sm font-medium text-muted-foreground">Driver</h2>
         <p className="flex items-center gap-2">
           <GraduationCap className="size-4 text-muted-foreground" />
-          <span className="font-medium">{ride.driver?.full_name ?? "Student"}</span>
-          {ride.driver?.school?.name && (
+          <span className="font-medium">{ride.driver?.name ?? "Student"}</span>
+          {ride.driver?.school && (
             <span className="text-muted-foreground">
-              · {ride.driver.school.name} {gradYear}
+              · {ride.driver.school} {gradYear}
             </span>
           )}
         </p>
@@ -98,6 +100,10 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
               Manage in My rides
             </Button>
           </div>
+        ) : viewer && !verified ? (
+          <p className="text-sm text-muted-foreground">
+            Contact info is only shown to students from active B10Pool schools.
+          </p>
         ) : contact ? (
           <div className="space-y-3">
             {ride.status === "full" && (
@@ -110,7 +116,7 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
         ) : (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              Sign in with your school email to see how to reach the driver.
+              Sign in with your school email to see the driver&apos;s full name and contact info.
             </p>
             <Button render={<Link href={`/login?next=/rides/${ride.id}`} />}>
               Sign in to contact

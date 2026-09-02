@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/auth/user-menu";
-import { getUserWithProfile } from "@/lib/supabase/auth";
+import { getViewer } from "@/lib/supabase/auth";
 import { Container } from "./container";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
 
 export async function Navbar() {
-  const session = await getUserWithProfile();
+  const session = await getViewer();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur supports-backdrop-filter:bg-background/70">
