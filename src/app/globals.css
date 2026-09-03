@@ -200,5 +200,5 @@
   animation: float 6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .road::after, .road-car, .animate-float { animation: none; }
+  .road::after, .road-car, .animate-float, .animate-ping { animation: none; }
 }

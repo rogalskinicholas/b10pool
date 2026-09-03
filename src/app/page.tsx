@@ -16,7 +16,11 @@ export default async function HomePage() {
     listRides({ limit: 200 }, viewer?.verified ?? false),
     listActiveSchools(),
   ]);
-  const schoolNames = formatSchoolList(schools.map((s) => s.name));
+  // Short hub names ("Purdue and UIUC") read better in the banner than the
+  // full school names, and the list still grows automatically on rollout.
+  const availableTo = formatSchoolList(
+    schools.map((s) => LOCATIONS[s.location].short),
+  ).toUpperCase();
 
   const rideCounts: Record<Region, number> = { west: 0, midwest: 0, east: 0 };
   for (const ride of rides) {
@@ -39,9 +43,20 @@ export default async function HomePage() {
               <span className="text-primary">Split the gas.</span>
             </h1>
             <p className="max-w-lg text-lg text-muted-foreground">
-              The Big Ten carpooling hub. Find a seat or fill your car between
-              campuses, cities, and airports — West, Midwest, and East — with
-              students from {schoolNames}.
+              The Big Ten carpooling hub. Find a seat or fill your car with
+              students across Big 10 universities between campuses, cities, and
+              airports in the three regions of the Big Ten: West, Midwest, and
+              East.
+            </p>
+            <p
+              role="note"
+              className="inline-flex items-center gap-2.5 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2.5 font-heading text-sm font-extrabold tracking-[0.08em] text-primary uppercase shadow-sm"
+            >
+              <span className="relative flex size-2.5 shrink-0">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex size-2.5 rounded-full bg-primary" />
+              </span>
+              Currently available for {availableTo} students
             </p>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" render={<Link href="/rides" />}>
