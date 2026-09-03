@@ -2,15 +2,13 @@ import { createAnonClient, createClient } from "@/lib/supabase/server";
 import { locationsInRegion, type Location, type Region } from "@/lib/locations";
 import type { Enums } from "@/types/database";
 
-const RIDE_COLUMNS =
-  "id, driver_id, origin, destination, departs_at, departs_on, seats_total, seats_available, price_per_seat, notes, status, created_at";
-
-// Anonymous access only has column-level SELECT on display_name (first initial) and school;
-// full_name and grad_year are for verified students.
+// Public (anon) access is limited by column-level grants: the driver's first initial
+// (display_name), school, and class year — never full_name, and never the ride's notes
+// (pickup spot & details). Verified students get everything.
 const PUBLIC_COLUMNS =
-  `${RIDE_COLUMNS}, driver:profiles(display_name, school:schools(name))` as const;
+  "id, driver_id, origin, destination, departs_at, departs_on, seats_total, seats_available, price_per_seat, status, created_at, driver:profiles(display_name, grad_year, school:schools(name))";
 const VERIFIED_COLUMNS =
-  `${RIDE_COLUMNS}, driver:profiles(full_name, grad_year, school:schools(name))` as const;
+  "id, driver_id, origin, destination, departs_at, departs_on, seats_total, seats_available, price_per_seat, notes, status, created_at, driver:profiles(full_name, grad_year, school:schools(name))";
 
 export type RideListItem = {
   id: string;
@@ -22,27 +20,35 @@ export type RideListItem = {
   seats_total: number;
   seats_available: number;
   price_per_seat: number;
+  /** Pickup spot & details. Always null for public viewers — the column isn't sent. */
   notes: string | null;
   status: Enums<"ride_status">;
   created_at: string;
+  /** True when fetched for a public viewer (name is an initial, notes withheld). */
+  redacted: boolean;
   driver: { name: string; gradYear: number | null; school: string | null } | null;
 };
 
-type RawDriver = (
-  | { display_name: string | null }
-  | { full_name: string; grad_year: number | null }
-) & { school: { name: string } | null };
-type RawRide = Omit<RideListItem, "driver"> & { driver: RawDriver | null };
+type RawDriver = ({ display_name: string | null } | { full_name: string }) & {
+  grad_year: number | null;
+  school: { name: string } | null;
+};
+type RawRide = Omit<RideListItem, "driver" | "notes" | "redacted"> & {
+  notes?: string | null;
+  driver: RawDriver | null;
+};
 
-function toRideListItem(row: RawRide): RideListItem {
-  const { driver, ...ride } = row;
+function toRideListItem(row: RawRide, verified: boolean): RideListItem {
+  const { driver, notes, ...ride } = row;
   return {
     ...ride,
+    notes: verified ? (notes ?? null) : null,
+    redacted: !verified,
     driver: driver
       ? {
           name:
             "full_name" in driver ? driver.full_name : (driver.display_name ?? "Student"),
-          gradYear: "full_name" in driver ? driver.grad_year : null,
+          gradYear: driver.grad_year,
           school: driver.school?.name ?? null,
         }
       : null,
@@ -54,11 +60,10 @@ async function clientFor(verified: boolean) {
 }
 
 // Not async on purpose: returning a PostgREST builder from an async function would await it.
+// The select-string parser can't type a union of two column lists, so the row type is
+// stated explicitly; `RawRide` covers both shapes.
 function selectRides(supabase: Awaited<ReturnType<typeof clientFor>>, verified: boolean) {
-  const columns: typeof PUBLIC_COLUMNS | typeof VERIFIED_COLUMNS = verified
-    ? VERIFIED_COLUMNS
-    : PUBLIC_COLUMNS;
-  return supabase.from("rides").select(columns);
+  return supabase.from("rides").select<string, RawRide>(verified ? VERIFIED_COLUMNS : PUBLIC_COLUMNS);
 }
 
 export type RideFilters = {
@@ -87,14 +92,14 @@ export async function listRides(filters: RideFilters, verified: boolean) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data as RawRide[]).map(toRideListItem);
+  return data.map((row) => toRideListItem(row, verified));
 }
 
 export async function getRide(id: string, verified: boolean) {
   const supabase = await clientFor(verified);
   const { data, error } = await selectRides(supabase, verified).eq("id", id).maybeSingle();
   if (error) throw error;
-  return data ? toRideListItem(data as RawRide) : null;
+  return data ? toRideListItem(data, verified) : null;
 }
 
 export async function getRideContact(id: string) {

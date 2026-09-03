@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  CalendarDays,
-  Clock,
-  GraduationCap,
-  Settings2,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Settings2, Users, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
+import { BlurredNotes, BlurredNotesLabel } from "@/components/rides/blurred-notes";
 import { ContactDriverButton } from "@/components/rides/contact-driver-button";
+import { DriverLine } from "@/components/rides/driver-line";
 import { RideStatusBadge } from "@/components/rides/ride-status-badge";
 import { RouteLabel } from "@/components/rides/route-label";
 import { LOCATIONS } from "@/lib/locations";
@@ -36,7 +30,7 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
   const contact = verified ? await getRideContact(id) : null;
   const isOwner = viewer?.user.id === ride.driver_id;
   const { date, time } = formatDeparture(ride.departs_at, ride.origin);
-  const gradYear = ride.driver?.gradYear ? `'${String(ride.driver.gradYear).slice(-2)}` : null;
+  const loginHref = `/login?next=/rides/${ride.id}`;
 
   return (
     <Container className="max-w-2xl space-y-8 py-8">
@@ -69,25 +63,33 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
         <Detail icon={Wallet} label="Per seat" value={formatPrice(ride.price_per_seat)} />
       </dl>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">Driver</h2>
-        <p className="flex items-center gap-2">
-          <GraduationCap className="size-4 text-muted-foreground" />
-          <span className="font-medium">{ride.driver?.name ?? "Student"}</span>
-          {ride.driver?.school && (
-            <span className="text-muted-foreground">
-              · {ride.driver.school} {gradYear}
-            </span>
-          )}
-        </p>
+        <DriverLine driver={ride.driver} size="lg" />
       </div>
 
-      {ride.notes && (
+      {ride.redacted ? (
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium text-muted-foreground">Pickup &amp; details</h2>
+          <BlurredNotes
+            className="rounded-xl border p-4"
+            cta={
+              viewer ? (
+                <BlurredNotesLabel>Only shown to students from active B10Pool schools</BlurredNotesLabel>
+              ) : (
+                <Link href={loginHref} className="rounded-full outline-none hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/50">
+                  <BlurredNotesLabel>Sign in to see pickup details</BlurredNotesLabel>
+                </Link>
+              )
+            }
+          />
+        </div>
+      ) : ride.notes ? (
         <div className="space-y-1">
           <h2 className="text-sm font-medium text-muted-foreground">Pickup &amp; details</h2>
           <p className="whitespace-pre-line text-sm">{ride.notes}</p>
         </div>
-      )}
+      ) : null}
 
       <div className="rounded-xl border bg-muted/40 p-5">
         {ride.status === "cancelled" ? (
@@ -116,9 +118,10 @@ export default async function RidePage({ params }: PageProps<"/rides/[id]">) {
         ) : (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
-              Sign in with your school email to see the driver&apos;s full name and contact info.
+              Sign in with your school email to see the driver&apos;s full name, pickup details,
+              and contact info.
             </p>
-            <Button render={<Link href={`/login?next=/rides/${ride.id}`} />}>
+            <Button render={<Link href={loginHref} />}>
               Sign in to contact
             </Button>
           </div>

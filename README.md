@@ -28,7 +28,7 @@ Schema lives in `supabase/migrations/` and is applied to the hosted project. Key
 - `profiles` — auto-created from `auth.users` by the `handle_new_user()` trigger.
 - `rides` — one row per posted ride. `departs_at` is a real instant; `departs_on` (set by trigger) is the calendar date in the origin hub's timezone for date filtering.
 
-Row Level Security: anyone can browse rides, but anonymous visitors only get the driver's first initial (`profiles.display_name`, e.g. "N.") and school — never full names, graduation year, or contact details. Full names, contact info, and posting are limited to **verified students** — signed-in users whose school is active (`is_verified_student()` is checked inside the policies, so deactivating a school instantly demotes its users to the public view). Only the driver can update or delete their own rides.
+Row Level Security: anyone can browse rides, but anonymous visitors only get the driver's first initial (`profiles.display_name`, e.g. "N."), school, and class year — never full names, ride notes (pickup spot & details), or contact details; the UI shows a blurred placeholder where the notes would be. Full names, notes, contact info, and posting are limited to **verified students** — signed-in users whose school is active (`is_verified_student()` is checked inside the policies, so deactivating a school instantly demotes its users to the public view). Only the driver can update or delete their own rides.
 
 ### Adding a new campus
 
