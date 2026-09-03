@@ -21,7 +21,7 @@ export function HubChips({
         return (
           <Link
             key={id}
-            href={isActive ? `/rides?region=${region}` : `/rides?region=${region}&destination=${id}`}
+            href={isActive ? `/rides?region=${region}` : `/rides?region=${region}&hub=${id}`}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition",
               isActive

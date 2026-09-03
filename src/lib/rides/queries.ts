@@ -68,6 +68,8 @@ function selectRides(supabase: Awaited<ReturnType<typeof clientFor>>, verified: 
 
 export type RideFilters = {
   region?: Region;
+  /** Rides that start OR end at this hub (used by the region hub chips). */
+  hub?: Location;
   origin?: Location;
   destination?: Location;
   date?: string;
@@ -82,7 +84,10 @@ export async function listRides(filters: RideFilters, verified: boolean) {
     .order("departs_at", { ascending: true })
     .limit(filters.limit ?? 100);
 
-  if (filters.region) {
+  if (filters.hub) {
+    // A hub implies its region, so this replaces the region filter.
+    query = query.or(`origin.eq.${filters.hub},destination.eq.${filters.hub}`);
+  } else if (filters.region) {
     const hubs = locationsInRegion(filters.region).join(",");
     query = query.or(`origin.in.(${hubs}),destination.in.(${hubs})`);
   }

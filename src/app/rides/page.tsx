@@ -23,11 +23,13 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
   const origin = isLocation(sp.origin) ? sp.origin : undefined;
   const destination = isLocation(sp.destination) ? sp.destination : undefined;
   const date = isDateInputValue(sp.date) ? sp.date : undefined;
-  const hasFilters = Boolean(origin || destination || date);
+  // Hub chips: rides that start or end at the hub. Only meaningful inside a region.
+  const hub = region && isLocation(sp.hub) && LOCATIONS[sp.hub].region === region ? sp.hub : undefined;
+  const hasFilters = Boolean(hub || origin || destination || date);
 
   const viewer = await getViewer();
   const rides = await listRides(
-    { region, origin, destination, date },
+    { region, hub, origin, destination, date },
     viewer?.verified ?? false,
   );
 
@@ -65,7 +67,7 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
       {region && (
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Hubs in this region</p>
-          <HubChips region={region} active={destination} />
+          <HubChips region={region} active={hub} />
         </div>
       )}
 
@@ -74,7 +76,7 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
       {rides.length ? (
         <>
           <p className="text-sm text-muted-foreground">
-            {`${rides.length} ${rides.length === 1 ? "ride" : "rides"} ${hasFilters ? "match your filters" : "upcoming"}${destination ? ` to ${LOCATIONS[destination].short}` : ""}`}
+            {`${rides.length} ${rides.length === 1 ? "ride" : "rides"} ${hasFilters ? (rides.length === 1 ? "matches" : "match") + " your filters" : "upcoming"}${hub ? ` from or to ${LOCATIONS[hub].short}` : destination ? ` to ${LOCATIONS[destination].short}` : ""}`}
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             {rides.map((ride) => (
@@ -93,7 +95,9 @@ export default async function RidesPage({ searchParams }: PageProps<"/rides">) {
           }
           description={
             hasFilters
-              ? "Try a different date or clear the filters. Or post a ride and let riders come to you."
+              ? hub
+                ? `No upcoming rides start or end at ${LOCATIONS[hub].label} yet. Post one and let riders come to you.`
+                : "Try a different date or clear the filters. Or post a ride and let riders come to you."
               : "Be the first to post a ride here."
           }
           action={
