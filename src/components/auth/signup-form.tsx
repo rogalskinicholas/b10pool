@@ -37,7 +37,7 @@ export function SignupForm() {
           id="full_name"
           name="full_name"
           autoComplete="name"
-          placeholder="Purdue Pete"
+          placeholder="First and last name"
           defaultValue={state.values?.full_name}
           aria-invalid={Boolean(state.fieldErrors?.full_name)}
           required
@@ -54,7 +54,7 @@ export function SignupForm() {
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@purdue.edu"
+          placeholder="you@university.edu"
           defaultValue={state.values?.email}
           aria-invalid={Boolean(state.fieldErrors?.email)}
           required
@@ -90,7 +90,7 @@ export function SignupForm() {
             name="phone"
             type="tel"
             autoComplete="tel"
-            placeholder="(765) 555-0123"
+            placeholder="(555) 555-0123"
             defaultValue={state.values?.phone}
           />
         </Field>

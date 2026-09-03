@@ -48,7 +48,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
             name="phone"
             type="tel"
             autoComplete="tel"
-            placeholder="(765) 555-0123"
+            placeholder="(555) 555-0123"
             defaultValue={v?.phone ?? profile.phone ?? ""}
           />
         </Field>

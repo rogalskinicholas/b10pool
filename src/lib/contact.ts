@@ -12,13 +12,13 @@ type ContactInfo = {
 export const CONTACT_METHODS: Record<ContactMethod, ContactInfo> = {
   sms: {
     label: "Text (SMS)",
-    placeholder: "(765) 555-0123",
+    placeholder: "(555) 555-0123",
     hint: "Riders will open a text to this number.",
     cta: "Text driver",
   },
   whatsapp: {
     label: "WhatsApp",
-    placeholder: "(765) 555-0123",
+    placeholder: "(555) 555-0123",
     hint: "Riders will open a WhatsApp chat to this number.",
     cta: "Message on WhatsApp",
   },

@@ -206,7 +206,7 @@ export function RideForm({
           name="notes"
           rows={3}
           maxLength={500}
-          placeholder="Leaving from Third Street Suites. Room for one suitcase each. Can drop at any ORD terminal."
+          placeholder="Meeting spot, luggage room, and any drop-off flexibility."
           defaultValue={v.notes}
         />
       </Field>

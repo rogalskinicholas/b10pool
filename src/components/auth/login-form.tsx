@@ -20,7 +20,7 @@ export function LoginForm({ next }: { next: string }) {
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@purdue.edu"
+          placeholder="you@university.edu"
           defaultValue={state.values?.email}
           aria-invalid={Boolean(state.fieldErrors?.email)}
           required
