@@ -43,3 +43,7 @@ next-env.d.ts
 
 # reference images (third-party marks) — not for publishing
 assets/
+
+# AI coding-assistant config (local only)
+CLAUDE.md
+AGENTS.md

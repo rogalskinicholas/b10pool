@@ -1,47 +1,127 @@
-# B10Pool
+<p align="center">
+  <img src="public/brand/wordmark-light.png" alt="B10 Pool" width="420">
+</p>
 
-Peer-to-peer carpooling for Big Ten students. Find or post rides between Purdue, UIUC, Chicago (Loop / ORD / MDW), and Indianapolis (Downtown / IND).
+<p align="center"><strong>A carpooling hub for Big Ten students.</strong></p>
 
-**Stack:** Next.js 16 (App Router, Server Actions) · TypeScript · Tailwind v4 · shadcn/ui (Base UI) · Supabase (Postgres + Auth + RLS) · Vercel
+<p align="center">
+  <a href="https://b10pool.vercel.app">Live site</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#privacy-and-security">Privacy</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#expanding-to-a-new-campus">Expanding</a>
+</p>
 
-## Local development
+---
+
+B10 Pool connects students who have a car with students who need a seat. Drivers post a trip between two hubs, riders find it, and the two coordinate directly. No booking fees, no middleman.
+
+Trips run between campuses, cities, and airports across the three regions of the Big Ten: **West**, **Midwest**, and **East**. Sign-up is currently open to **Purdue** and **UIUC** students, with more campuses rolling out over time.
+
+## Features
+
+- **Verified students only.** Accounts require an email address from a participating university. Domains are checked server-side at sign-up, not just in the browser.
+- **Region-first browsing.** Start from West, Midwest, or East, then narrow to a single campus, city, or airport to see every ride that starts or ends there.
+- **Post a ride in under a minute.** Origin, destination, departure time, seats, price per seat, pickup notes, and how riders should reach you.
+- **Driver dashboard.** Mark a ride full, reopen it, adjust seats, cancel, or delete.
+- **Direct contact.** Riders reach drivers over text, WhatsApp, Instagram, or GroupMe. The app never sits in the middle of the conversation.
+- **Timezone-aware.** Departure times are stored as instants and shown in the origin hub's local time, so a Los Angeles to Seattle ride and a Purdue to Chicago ride both read correctly.
+
+## Privacy and security
+
+Anyone can browse rides, but what they see depends on who they are.
+
+| | Public visitor | Verified student |
+| --- | --- | --- |
+| Route, date, time, price, seats | Yes | Yes |
+| Driver name | First initial only | Full name |
+| Driver school and class year | Yes | Yes |
+| Pickup notes and details | Blurred | Yes |
+| Contact details | No | Yes |
+| Post and manage rides | No | Yes |
+
+This is enforced in the database, not only in the interface:
+
+- Public requests use column-level grants, so full names, notes, and contact details are never sent to an unauthenticated client. The driver's initial comes from a generated column.
+- Row Level Security policies check `is_verified_student()`, which requires a signed-in user whose school is currently active. Deactivating a school instantly moves its users back to the public view.
+- Only a ride's driver can update or delete it.
+- Privileged helper functions run with a pinned search path and cannot be called through the public API.
+
+## Tech stack
+
+| Layer | Choice |
+| --- | --- |
+| Framework | Next.js 16 (App Router, React Server Components, Server Actions) with TypeScript |
+| UI | Tailwind CSS v4, shadcn/ui on Base UI, Lucide icons |
+| Data and auth | Supabase (Postgres, Row Level Security, Supabase Auth) |
+| Hosting | Vercel, deployed automatically from `main` |
+
+## Getting started
+
+Prerequisites: Node.js 20 or newer and a Supabase project.
 
 ```bash
-cp .env.example .env.local   # fill in Supabase URL + publishable key
+git clone https://github.com/rogalskinicholas/b10pool.git
+cd b10pool
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable (`sb_publishable_…`) key |
-| `NEXT_PUBLIC_SITE_URL` | Public site origin, used for auth email redirects |
+Fill in `.env.local` with your own project's values:
 
-`npm run lint` and `npm run build` must pass before deploying.
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase publishable key (`sb_publishable_…`) |
+| `NEXT_PUBLIC_SITE_URL` | The origin the app is served from, used in auth email links |
+
+Apply the SQL in `supabase/migrations/` to your project in order, then open `http://localhost:3000`.
+
+Before shipping:
+
+```bash
+npm run lint
+npm run build
+```
+
+### Supabase auth settings
+
+In the Supabase dashboard under Authentication → URL Configuration, set the Site URL to your deployed origin and add `<origin>/auth/confirm` for every origin you use (production, previews, and `http://localhost:3000`).
 
 ## Database
 
-Schema lives in `supabase/migrations/` and is applied to the hosted project. Key pieces:
+The schema is versioned in `supabase/migrations/` and consists of three tables.
 
-- `schools` — the **rollout lever**. Adding a college = one row (`id`, `name`, `email_domain`, `location`). Signups are rejected server-side unless the email domain matches an active school.
-- `profiles` — auto-created from `auth.users` by the `handle_new_user()` trigger.
-- `rides` — one row per posted ride. `departs_at` is a real instant; `departs_on` (set by trigger) is the calendar date in the origin hub's timezone for date filtering.
+- **`schools`** lists participating universities: an id, display name, email domain, home hub, and an active flag. Sign-ups are rejected unless the email domain matches an active row.
+- **`profiles`** holds one row per user, created automatically by a trigger when a Supabase Auth user is inserted.
+- **`rides`** holds one row per posted trip. `departs_at` is the real instant; `departs_on` is the calendar date in the origin hub's timezone, maintained by a trigger for date filtering.
 
-Row Level Security: anyone can browse rides, but anonymous visitors only get the driver's first initial (`profiles.display_name`, e.g. "N."), school, and class year — never full names, ride notes (pickup spot & details), or contact details; the UI shows a blurred placeholder where the notes would be. Full names, notes, contact info, and posting are limited to **verified students** — signed-in users whose school is active (`is_verified_student()` is checked inside the policies, so deactivating a school instantly demotes its users to the public view). Only the driver can update or delete their own rides.
+Hubs are a Postgres enum (`location`) mirrored by `src/lib/locations.ts`, which carries each hub's label, region, kind, and timezone.
 
-### Adding a new campus
+## Expanding to a new campus
 
-1. If it's a new hub, add a value to the `location` enum and a label in `src/lib/locations.ts` (+ timezone in `src/lib/time.ts` and `time_zone_for()` in SQL if not Central).
-2. `insert into schools (id, name, email_domain, location) values ('msu', 'Michigan State University', 'msu.edu', 'msu');`
+Adding a university that already has a hub is a single row:
 
-## Project layout
+```sql
+insert into public.schools (id, name, email_domain, location)
+values ('msu', 'Michigan State University', 'msu.edu', 'msu');
+```
+
+If the campus is a new hub, first add a value to the `location` enum in a migration, then add its entry to `src/lib/locations.ts` and, if it is not in the Central timezone, to `time_zone_for()` in SQL.
+
+## Project structure
 
 ```
-src/app/            routes (rides, dashboard, profile, auth) + server actions
-src/components/     layout, auth, rides, form, ui (shadcn)
-src/lib/            supabase clients, queries, validation, locations, contact, time
-src/proxy.ts        session refresh + auth-gated routes
-supabase/migrations SQL schema
-docs/SPEC.md        original product spec
+src/app/              Routes, layouts, and server actions
+src/components/       Layout, regions, rides, forms, auth, and shadcn/ui primitives
+src/lib/              Supabase clients, ride queries, validation, hubs, timezones
+src/proxy.ts          Session refresh and auth-gated routes
+supabase/migrations/  Database schema, in order
+public/brand/         Logo assets
+docs/                 Product specification
 ```
+
+## Disclaimer
+
+B10 Pool is an independent student project. It is not affiliated with, endorsed by, or sponsored by the Big Ten Conference or any of its member universities. Riders and drivers arrange trips directly with each other.
